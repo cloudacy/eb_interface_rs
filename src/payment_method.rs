@@ -9,9 +9,7 @@ enum PaymentMethodType<'a> {
     #[default]
     NoPayment,
     SEPADirectDebit(PaymentMethodSEPADirectDebit<'a>),
-    UniversalBankTransactionBeneficiaryAccount(
-        PaymentMethodUniversalBankTransactionBeneficiaryAccount<'a>,
-    ),
+    UniversalBankTransactionBeneficiaryAccount(PaymentMethodUniversalBankTransactionBeneficiaryAccount<'a>),
     UniversalBankTransaction(PaymentMethodUniversalBankTransaction<'a>),
     PaymentCard(PaymentMethodPaymentCard<'a>),
     OtherPayment,
@@ -54,9 +52,7 @@ impl MatchBicRegex for PaymentMethodSEPADirectDebit<'_> {}
 
 impl<'a> PaymentMethodSEPADirectDebit<'a> {
     pub fn new() -> Self {
-        PaymentMethodSEPADirectDebit {
-            ..Default::default()
-        }
+        PaymentMethodSEPADirectDebit { ..Default::default() }
     }
 
     pub fn with_direct_debit_type(mut self, direct_debit_type: &'a str) -> Self {
@@ -82,9 +78,7 @@ impl<'a> PaymentMethodSEPADirectDebit<'a> {
 
     pub fn with_bank_account_owner(mut self, bank_account_owner: &'a str) -> Result<Self, String> {
         if bank_account_owner.len() > 70 {
-            return Err(format!(
-                "BankAccountOwner {bank_account_owner} is too long!"
-            ));
+            return Err(format!("BankAccountOwner {bank_account_owner} is too long!"));
         }
         self.bank_account_owner = Some(bank_account_owner);
         Ok(self)
@@ -106,16 +100,11 @@ impl<'a> PaymentMethodSEPADirectDebit<'a> {
         Ok(self)
     }
 
-    pub fn with_debit_collection_date(
-        mut self,
-        debit_collection_date: &'a str,
-    ) -> Result<Self, String> {
+    pub fn with_debit_collection_date(mut self, debit_collection_date: &'a str) -> Result<Self, String> {
         static DATE_REGEX_STR: &str = r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$";
         static DATE_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(DATE_REGEX_STR).unwrap());
         if !DATE_REGEX.is_match(debit_collection_date) {
-            return Err(format!(
-                "DebitCollectionDate {debit_collection_date} doesn't match regex {DATE_REGEX_STR}!"
-            ));
+            return Err(format!("DebitCollectionDate {debit_collection_date} doesn't match regex {DATE_REGEX_STR}!"));
         }
         self.debit_collection_date = Some(debit_collection_date);
         Ok(self)
@@ -185,9 +174,7 @@ impl MatchBicRegex for PaymentMethodUniversalBankTransactionBeneficiaryAccount<'
 
 impl<'a> PaymentMethodUniversalBankTransactionBeneficiaryAccount<'a> {
     pub fn new() -> Self {
-        PaymentMethodUniversalBankTransactionBeneficiaryAccount {
-            ..Default::default()
-        }
+        PaymentMethodUniversalBankTransactionBeneficiaryAccount { ..Default::default() }
     }
 
     pub fn with_bank_name(mut self, bank_name: &'a str) -> Result<Self, String> {
@@ -203,10 +190,7 @@ impl<'a> PaymentMethodUniversalBankTransactionBeneficiaryAccount<'a> {
         bank_code: PaymentMethodUniversalBankTransactionBeneficiaryAccountBankCode<'a>,
     ) -> Result<Self, String> {
         if bank_code.bank_code_type.len() != 2 {
-            return Err(format!(
-                "BankCodeType {} is not 2 characters long!",
-                bank_code.bank_code_type
-            ));
+            return Err(format!("BankCodeType {} is not 2 characters long!", bank_code.bank_code_type));
         }
         self.bank_code = Some(bank_code);
         Ok(self)
@@ -235,9 +219,7 @@ impl<'a> PaymentMethodUniversalBankTransactionBeneficiaryAccount<'a> {
 
     pub fn with_bank_account_owner(mut self, bank_account_owner: &'a str) -> Result<Self, String> {
         if bank_account_owner.len() > 70 {
-            return Err(format!(
-                "BankAccountOwner {bank_account_owner} is too long!"
-            ));
+            return Err(format!("BankAccountOwner {bank_account_owner} is too long!"));
         }
         self.bank_account_owner = Some(bank_account_owner);
         Ok(self)
@@ -290,9 +272,7 @@ pub struct PaymentMethodUniversalBankTransaction<'a> {
 
 impl<'a> PaymentMethodUniversalBankTransaction<'a> {
     pub fn new() -> Self {
-        PaymentMethodUniversalBankTransaction {
-            ..Default::default()
-        }
+        PaymentMethodUniversalBankTransaction { ..Default::default() }
     }
 
     pub fn with_consolidator_payable(mut self, consolidator_payable: bool) -> Self {
@@ -328,10 +308,7 @@ impl ToXml for PaymentMethodUniversalBankTransaction<'_> {
     fn to_xml(&self) -> String {
         let mut e = XmlElement::new("UniversalBankTransaction");
 
-        e = e.with_attr(
-            "ConsolidatorPayable",
-            format!("{}", self.consolidator_payable.unwrap_or(false)),
-        );
+        e = e.with_attr("ConsolidatorPayable", format!("{}", self.consolidator_payable.unwrap_or(false)));
 
         if let Some(beneficiary_account) = &self.beneficiary_account {
             for account in beneficiary_account {
@@ -340,8 +317,7 @@ impl ToXml for PaymentMethodUniversalBankTransaction<'_> {
         }
 
         if let Some(payment_reference) = self.payment_reference {
-            let mut payment_reference_xml_element =
-                XmlElement::new("PaymentReference").with_text(payment_reference);
+            let mut payment_reference_xml_element = XmlElement::new("PaymentReference").with_text(payment_reference);
 
             if let Some(payment_reference_checksum) = self.payment_reference_checksum {
                 payment_reference_xml_element =
@@ -365,8 +341,7 @@ pub struct PaymentMethodPaymentCard<'a> {
 impl<'a> PaymentMethodPaymentCard<'a> {
     pub fn new(primary_account_number: &'a str) -> Result<Self, String> {
         static PAYMENT_CARD_REGEX_STR: &str = r"^[0-9]{0,6}\*[0-9]{0,4}$";
-        static PAYMENT_CARD_REGEX: LazyLock<Regex> =
-            LazyLock::new(|| Regex::new(PAYMENT_CARD_REGEX_STR).unwrap());
+        static PAYMENT_CARD_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(PAYMENT_CARD_REGEX_STR).unwrap());
         if !PAYMENT_CARD_REGEX.is_match(primary_account_number) {
             return Err(format!(
                 "Invalid primary account number \"{primary_account_number}\". Only provide at most the first 6 and last 4 digits, separated with a \"*\".",
@@ -412,9 +387,7 @@ impl<'a> PaymentMethod<'a> {
         }
     }
 
-    pub fn sepa_direct_debit(
-        sepa_direct_debit: PaymentMethodSEPADirectDebit<'a>,
-    ) -> PaymentMethod<'a> {
+    pub fn sepa_direct_debit(sepa_direct_debit: PaymentMethodSEPADirectDebit<'a>) -> PaymentMethod<'a> {
         PaymentMethod {
             method: PaymentMethodType::SEPADirectDebit(sepa_direct_debit),
             ..Default::default()
@@ -484,20 +457,14 @@ mod tests {
     #[test]
     fn default() {
         assert_eq!(
-            PaymentMethod {
-                ..Default::default()
-            }
-            .to_xml(),
+            PaymentMethod { ..Default::default() }.to_xml(),
             "<PaymentMethod><NoPayment></NoPayment></PaymentMethod>"
         )
     }
 
     #[test]
     fn no_payment() {
-        assert_eq!(
-            PaymentMethod::no_payment().to_xml(),
-            "<PaymentMethod><NoPayment></NoPayment></PaymentMethod>"
-        )
+        assert_eq!(PaymentMethod::no_payment().to_xml(), "<PaymentMethod><NoPayment></NoPayment></PaymentMethod>")
     }
 
     #[test]
@@ -523,21 +490,17 @@ mod tests {
         assert_eq!(
             PaymentMethod::universal_bank_transaction(PaymentMethodUniversalBankTransaction {
                 consolidator_payable: Some(true),
-                beneficiary_account: Some(vec![
-                    PaymentMethodUniversalBankTransactionBeneficiaryAccount {
-                        bank_name: Some("Bank"),
-                        bank_code: Some(
-                            PaymentMethodUniversalBankTransactionBeneficiaryAccountBankCode {
-                                bank_code: 12000,
-                                bank_code_type: "AT",
-                            }
-                        ),
-                        bic: Some("BKAUATWW"),
-                        bank_account_number: Some("11111111111"),
-                        iban: Some("AT491200011111111111"),
-                        bank_account_owner: Some("Name"),
-                    }
-                ]),
+                beneficiary_account: Some(vec![PaymentMethodUniversalBankTransactionBeneficiaryAccount {
+                    bank_name: Some("Bank"),
+                    bank_code: Some(PaymentMethodUniversalBankTransactionBeneficiaryAccountBankCode {
+                        bank_code: 12000,
+                        bank_code_type: "AT",
+                    }),
+                    bic: Some("BKAUATWW"),
+                    bank_account_number: Some("11111111111"),
+                    iban: Some("AT491200011111111111"),
+                    bank_account_owner: Some("Name"),
+                }]),
                 payment_reference: Some("123456789012"),
                 payment_reference_checksum: Some("X"),
             })
