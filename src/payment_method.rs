@@ -46,7 +46,7 @@ const BIC_REGEX_STR: &str = r"^[0-9A-Za-z]{8}([0-9A-Za-z]{3})?$";
 trait MatchBicRegex {
     fn match_bic_regex(bic: &str) -> bool {
         static BIC_REGEX: LazyLock<Regex> = LazyLock::new(|| Regex::new(BIC_REGEX_STR).unwrap());
-        !BIC_REGEX.is_match(bic)
+        BIC_REGEX.is_match(bic)
     }
 }
 
