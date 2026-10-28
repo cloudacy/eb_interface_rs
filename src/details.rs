@@ -79,11 +79,6 @@ impl<'a> DetailsItem<'a> {
             .round_dp_with_strategy(2, RoundingStrategy::MidpointAwayFromZero)
         /* + sum of other_vat_able_tax_list_line_item.tax_amount */
     }
-
-    pub(crate) fn line_item_total_gross_amount(&self) -> Decimal {
-        self.line_item_amount()
-            * ((self.tax_item.tax_percent + Decimal::ONE_HUNDRED) / Decimal::ONE_HUNDRED)
-    }
 }
 
 impl ToXml for DetailsItem<'_> {

@@ -100,7 +100,7 @@ impl<'a> Invoice<'a> {
             tax = tax.with_element(tax_item_with_taxable_amount);
         }
 
-        let total_gross_amount = self.details.items.iter().fold(Decimal::ZERO, |sum, i| sum + i.line_item_total_gross_amount()) /* + sum of surcharges at root + sum of other_vat_able_taxes at root - sum of reductions at root */;
+        let total_gross_amount = tax_items_with_taxable_amount.iter().fold(Decimal::ZERO, |sum, i| sum + i.taxable_amount() + i.tax_amount()) /* + sum of surcharges at root + sum of other_vat_able_taxes at root - sum of reductions at root */;
         let payable_amount = total_gross_amount /* - prepaid_amount + rounding_amount + sum of below_the_lines_items */;
 
         let mut invoice = XmlElement::new(&DocumentType::Invoice.to_string())
@@ -238,5 +238,36 @@ mod tests {
             tax_items.first().map_or(Decimal::from(0), |i| i.1),
             Decimal::new(285227, 2)
         )
+    }
+
+    #[test]
+    fn sums_rounded_tax_amounts() {
+        let invoice = Invoice::new(
+            "test",
+            "EUR",
+            "0000",
+            "2024-06-02",
+            Biller::new("ATU00000000"),
+            InvoiceRecipient::new("ATU000000000"),
+        )
+        .with_items(vec![
+            DetailsItem::new(
+                Decimal::from(1),
+                "STK",
+                Decimal::new(5, 2),
+                TaxItem::new(Decimal::from(10), TaxCategory::AA),
+            ),
+            DetailsItem::new(
+                Decimal::from(1),
+                "STK",
+                Decimal::new(3, 2),
+                TaxItem::new(Decimal::from(20), TaxCategory::S),
+            ),
+        ])
+        .to_xml();
+
+        assert!(
+            invoice.contains("<Tax><TaxItem><TaxableAmount>0.05</TaxableAmount><TaxPercent TaxCategoryCode=\"AA\">10</TaxPercent><TaxAmount>0.01</TaxAmount></TaxItem><TaxItem><TaxableAmount>0.03</TaxableAmount><TaxPercent TaxCategoryCode=\"S\">20</TaxPercent><TaxAmount>0.01</TaxAmount></TaxItem></Tax><TotalGrossAmount>0.10</TotalGrossAmount>")
+        );
     }
 }

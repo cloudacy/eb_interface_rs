@@ -74,10 +74,18 @@ pub(crate) struct TaxItemWithTaxableAmount {
     taxable_amount: Decimal,
 }
 
+impl TaxItemWithTaxableAmount {
+    pub(crate) fn taxable_amount(&self) -> Decimal {
+        self.taxable_amount
+    }
+
+    pub(crate) fn tax_amount(&self) -> Decimal {
+        (self.taxable_amount * (self.tax_percent / Decimal::ONE_HUNDRED)).clone_with_scale(2)
+    }
+}
+
 impl ToXml for TaxItemWithTaxableAmount {
     fn to_xml(&self) -> String {
-        let tax_amount = self.taxable_amount * (self.tax_percent / Decimal::ONE_HUNDRED);
-
         XmlElement::new("TaxItem")
             .with_text_element(
                 "TaxableAmount",
@@ -88,7 +96,7 @@ impl ToXml for TaxItemWithTaxableAmount {
                     .with_attr("TaxCategoryCode", self.tax_category.to_string())
                     .with_text(self.tax_percent.to_string()),
             )
-            .with_text_element("TaxAmount", tax_amount.clone_with_scale(2).to_string())
+            .with_text_element("TaxAmount", self.tax_amount().to_string())
             .to_xml()
     }
 }
