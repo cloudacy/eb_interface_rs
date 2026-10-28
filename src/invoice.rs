@@ -89,15 +89,15 @@ impl<'a> Invoice<'a> {
     }
 
     pub fn to_xml(&self) -> String {
-        let tax_item_xmls = self
+        let tax_items_with_taxable_amount = self
             .invoice_tax_items()
             .iter()
-            .map(|e| TaxItem::new(e.0 .0, e.0 .1).taxable_amount(e.1))
+            .map(|e| TaxItem::new(e.0 .0, e.0 .1).with_taxable_amount(e.1))
             .collect::<Vec<TaxItemWithTaxableAmount>>();
 
         let mut tax = XmlElement::new("Tax");
-        for tax_item_xml in tax_item_xmls {
-            tax = tax.with_element(&tax_item_xml);
+        for tax_item_with_taxable_amount in &tax_items_with_taxable_amount {
+            tax = tax.with_element(tax_item_with_taxable_amount);
         }
 
         let total_gross_amount = self.details.items.iter().fold(Decimal::ZERO, |sum, i| sum + i.line_item_total_gross_amount()) /* + sum of surcharges at root + sum of other_vat_able_taxes at root - sum of reductions at root */;

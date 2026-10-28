@@ -59,7 +59,7 @@ impl TaxItem {
         }
     }
 
-    pub(crate) fn taxable_amount(&self, taxable_amount: Decimal) -> TaxItemWithTaxableAmount {
+    pub(crate) fn with_taxable_amount(&self, taxable_amount: Decimal) -> TaxItemWithTaxableAmount {
         TaxItemWithTaxableAmount {
             tax_percent: self.tax_percent,
             tax_category: self.tax_category,

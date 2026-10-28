@@ -123,7 +123,7 @@ impl ToXml for DetailsItem<'_> {
         let line_item_amount = self.line_item_amount();
 
         // TaxItem.
-        e = e.with_element(&self.tax_item.taxable_amount(line_item_amount));
+        e = e.with_element(&self.tax_item.with_taxable_amount(line_item_amount));
 
         // LineItemAmount.
         e = e.with_text_element("LineItemAmount", line_item_amount.to_string());
