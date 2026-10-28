@@ -116,18 +116,17 @@ impl ToXml for DetailsItem<'_> {
         e = e.with_element(&up);
 
         // ReductionListLineItem(s) and SurchargeListLineItem(s).
-        let mut reduction_and_surcharge_sum = Decimal::ZERO;
         if let Some(reduction_and_surcharge) = &self.reduction_and_surcharge {
-            reduction_and_surcharge_sum = reduction_and_surcharge.sum();
             e = e.with_element(reduction_and_surcharge);
         }
 
+        let line_item_amount = self.line_item_amount();
+
         // TaxItem.
-        let taxable_amount = self.quantity * self.unit_price + reduction_and_surcharge_sum;
-        e = e.with_element(&self.tax_item.taxable_amount(taxable_amount));
+        e = e.with_element(&self.tax_item.taxable_amount(line_item_amount));
 
         // LineItemAmount.
-        e = e.with_text_element("LineItemAmount", self.line_item_amount().to_string());
+        e = e.with_text_element("LineItemAmount", line_item_amount.to_string());
 
         e.to_xml()
     }
